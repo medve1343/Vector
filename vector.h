@@ -64,7 +64,22 @@ public:
 
    void swap(vector& rhs)
    {
-       
+      custom::vector<int> temp;
+      temp.data = this->data;
+      temp.numElements = this->numElements;
+      temp.numCapacity = this->numCapacity;
+      
+      this->data = rhs.data;
+      this->numElements = rhs.numElements;
+      this->numCapacity = rhs.numCapacity;
+      
+      rhs.data = temp.data;
+      rhs.numElements = temp.numElements;
+      rhs.numCapacity = temp.numCapacity;
+      
+      
+      
+      
    }
    vector & operator = (const vector & rhs);
     vector& operator = (vector&& rhs);
@@ -74,8 +89,8 @@ public:
    //
 
    class iterator;
-   iterator       begin() { return iterator(); }
-   iterator       end() { return iterator(); }
+   iterator       begin() { return iterator(data);}
+   iterator       end() { return iterator(data+numCapacity); }
 
    //
    // Access
@@ -159,10 +174,10 @@ class vector <T> ::iterator
    friend class ::TestHash;
 public:
    // constructors, destructors, and assignment operator
-   iterator()                           { this->p = new T; }
-   iterator(T* p)                       { this->p = new T; }
-   iterator(const iterator& rhs)        { this->p = new T; }
-   iterator(size_t index, vector<T>& v) { this->p = new T; }
+   iterator()                           { p=NULL; }
+   iterator(T* p)                       { this->p = p; }
+   iterator(const iterator& rhs)        { *this = rhs; }
+   iterator(size_t index, vector<T>& v) { this->p = v.data+index; }
    iterator& operator = (const iterator& rhs)
    {
       this->p = new T;
@@ -176,19 +191,22 @@ public:
    // dereference operator
    T& operator * ()
    {
-      return *(new T);
-   }
+      //if(p == NULL){throw "Error: dereferencing null data in iterator.";}
+      return *p;   }
 
    // prefix increment
    iterator& operator ++ ()
    {
+      if(p != NULL){p++;}
       return *this;
    }
 
    // postfix increment
    iterator operator ++ (int postfix)
    {
-      return *this;
+      iterator tmpIterator(*this);
+      if(p != NULL){p++;}
+      return tmpIterator;
    }
 
    // prefix decrement
@@ -310,11 +328,11 @@ vector <T> :: vector (const vector & rhs)
             data = new T[rhs.capacity()];
             numCapacity = rhs.capacity();
         }
-        
+       numElements = 0;
         for (int i =0;i<rhs.size();i++)
         {
             data[i] = rhs.data[i];
-            numElements++;
+           numElements++;
         }
         
         
@@ -441,7 +459,7 @@ void vector <T> :: shrink_to_fit()
 template <typename T>
 T & vector <T> :: operator [] (size_t index)
 {
-   return *(new T);
+   return data[index];
    
 }
 
@@ -452,7 +470,7 @@ T & vector <T> :: operator [] (size_t index)
 template <typename T>
 const T & vector <T> :: operator [] (size_t index) const
 {
-   return *(new T);
+   return data[index];
 }
 
 /*****************************************
@@ -463,7 +481,7 @@ template <typename T>
 T & vector <T> :: front ()
 {
    
-   return *(new T);
+   return data[0];
 }
 
 /******************************************
@@ -473,7 +491,7 @@ T & vector <T> :: front ()
 template <typename T>
 const T & vector <T> :: front () const
 {
-   return *(new T);
+   return data[0];
 }
 
 /*****************************************
@@ -483,7 +501,7 @@ const T & vector <T> :: front () const
 template <typename T>
 T & vector <T> :: back()
 {
-   return *(new T);
+   return data[numCapacity-1];
 }
 
 /******************************************
@@ -493,7 +511,7 @@ T & vector <T> :: back()
 template <typename T>
 const T & vector <T> :: back() const
 {
-   return *(new T);
+   return data[numCapacity-1];
 }
 
 /***************************************
@@ -530,10 +548,15 @@ vector <T> & vector <T> :: operator = (const vector & rhs)
    if (rhs.data !=NULL)
    {
       //data = rhs.data;
-      this->data = new T[rhs.capacity()];
+      
       this->numElements = rhs.size();
-      this->numCapacity = rhs.capacity();
-      this->data = new T[rhs.size()];
+      if(this->numCapacity <rhs.capacity())
+      {
+         this->data = new T[rhs.capacity()];
+         this->numCapacity = rhs.capacity();
+      }
+      
+      //this->data = new T[rhs.size()];
       for (int i =0;i<rhs.size();i++ )
       {
           this->data[i] = rhs.data[i];
@@ -548,14 +571,18 @@ vector <T>& vector <T> :: operator = (vector&& rhs)
    
    if (rhs.data !=NULL)
    {
+      
       data = rhs.data;
       this->numElements = rhs.size();
+      this->numCapacity = rhs.capacity();
       this->data = new T[rhs.capacity()];
       for (int i =0;i<rhs.size();i++ )
       {
           this->data[i] = rhs.data[i];
       }
    }
+   rhs.numCapacity = 0;
+   rhs.numElements = 0;
    rhs.data = NULL;
    return *this;
 }
