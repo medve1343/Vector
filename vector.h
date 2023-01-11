@@ -154,8 +154,8 @@ private:
 
 
 /**************************************************
- * Convenience function for finding the size of the
- * next buffer.
+ * Convenience function for determining the size of
+ * the next buffer.
  **************************************************/
 template<typename T>
 int vector<T>::nextCapacity()
