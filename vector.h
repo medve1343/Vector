@@ -76,10 +76,7 @@ public:
       rhs.data = temp.data;
       rhs.numElements = temp.numElements;
       rhs.numCapacity = temp.numCapacity;
-      
-      
-      
-      
+
    }
    vector & operator = (const vector & rhs);
     vector& operator = (vector&& rhs);
@@ -459,12 +456,20 @@ void vector <T> :: resize(size_t newElements, const T & t)
 template <typename T>
 void vector <T> :: reserve(size_t newCapacity)
 {
-   auto newData = new T[newCapacity];
-   for (int i = 0; i < numElements; i++)
-      newData[i] = data[i];
-   delete data;
-   data = newData;
-   numCapacity = newCapacity;
+   if (newCapacity <= numCapacity)
+      return; // Do nothing if trying to decrease
+   else
+   {
+      // Make a new buffer
+      auto newData = new T[newCapacity];
+      // Copy over the old values
+      for (int i = 0; i < numElements; i++)
+         newData[i] = data[i];
+      // Remove the old buffer
+      delete data;
+      data = newData;
+      numCapacity = newCapacity;
+   }
 }
 
 /***************************************
