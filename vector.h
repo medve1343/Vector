@@ -14,7 +14,7 @@
  *
  *    This will contain the class definition of:
  *        vector                 : A class that represents a Vector
- *        vector::iterator       : An interator through Vector
+ *        vector::iterator       : An iterator through Vector
  * Author
  *    <your names here>
  ************************************************************************/
@@ -117,12 +117,8 @@ public:
    // Remove
    //
 
-   void clear()
-   {
-   }
-   void pop_back()
-   {
-   }
+   void clear();
+   void pop_back();
    void shrink_to_fit();
 
    //
@@ -148,11 +144,27 @@ public:
    // vector-specific interfaces
    
 private:
+
+   int nextCapacity();
    
    T *  data;                 // user data, a dynamically-allocated array
    size_t  numCapacity;       // the capacity of the array
    size_t  numElements;       // the number of items currently used
 };
+
+
+/**************************************************
+ * Convenience function for finding the size of the
+ * next buffer.
+ **************************************************/
+template<typename T>
+int vector<T>::nextCapacity()
+{
+   assert(numCapacity >= 0);
+   if (numCapacity == 0)
+      return 1;
+   return numCapacity * 2;
+}
 
 /**************************************************
  * VECTOR ITERATOR
@@ -252,7 +264,7 @@ vector <T> :: vector(size_t num, const T & t)
    data = new T[num];
    numCapacity = num;
    numElements = num;
-    for (int i =0;i<num;i++)
+    for (int i = 0; i < num; i++)
     {
         data[i] = t;
     }
@@ -415,13 +427,25 @@ vector <T> :: ~vector()
 template <typename T>
 void vector <T> :: resize(size_t newElements)
 {
-   
+   resize(newElements, 0);
 }
 
 template <typename T>
 void vector <T> :: resize(size_t newElements, const T & t)
 {
-   
+   if (newElements > numCapacity)
+   {
+      // Reallocate
+      reserve(newElements);
+   }
+   if (newElements > numElements)
+   {
+      // Fill remaining space
+      for (int i = numElements; i < newElements; i++) {
+         data[i] = t;
+      }
+   }
+   numElements = newElements;
 }
 
 /***************************************
@@ -435,7 +459,12 @@ void vector <T> :: resize(size_t newElements, const T & t)
 template <typename T>
 void vector <T> :: reserve(size_t newCapacity)
 {
-   numCapacity = 99;
+   auto newData = new T[newCapacity];
+   for (int i = 0; i < numElements; i++)
+      newData[i] = data[i];
+   delete data;
+   data = newData;
+   numCapacity = newCapacity;
 }
 
 /***************************************
@@ -447,7 +476,12 @@ void vector <T> :: reserve(size_t newCapacity)
 template <typename T>
 void vector <T> :: shrink_to_fit()
 {
-   
+   assert(numCapacity >= numElements); // Ensure we are actually shrinking
+   numCapacity = numElements;
+   if (numCapacity == 0)
+   {
+      data = nullptr;
+   }
 }
 
 
@@ -518,21 +552,25 @@ const T & vector <T> :: back() const
  * VECTOR :: PUSH BACK
  * This method will add the element 't' to the
  * end of the current buffer.  It will also grow
- * the buffer as needed to accomodate the new element
+ * the buffer as needed to accommodate the new element
  *     INPUT  : 't' the new element to be added
  *     OUTPUT : *this
  **************************************/
 template <typename T>
 void vector <T> :: push_back (const T & t)
 {
-   
+   if (numElements == numCapacity)
+      reserve(nextCapacity());
+   data[numElements++] = t;
 }
 
 template <typename T>
 void vector <T> ::push_back(T && t)
 {
-   
-   
+   // Not sure if this should just be copy-pasted from the other push_back...
+   if (numElements == numCapacity)
+      reserve(nextCapacity());
+   data[numElements++] = t;
 }
 
 /***************************************
@@ -565,11 +603,12 @@ vector <T> & vector <T> :: operator = (const vector & rhs)
    
    return *this;
 }
+
 template <typename T>
 vector <T>& vector <T> :: operator = (vector&& rhs)
 {
    
-   if (rhs.data !=NULL)
+   if (rhs.data != NULL)
    {
       
       data = rhs.data;
@@ -588,6 +627,18 @@ vector <T>& vector <T> :: operator = (vector&& rhs)
 }
 
 
+template<typename T>
+void vector<T>::pop_back() {
+   if (numElements <= 0)
+      return;
+   numElements--;
+}
+
+template<typename T>
+void vector<T>::clear()
+{
+   numElements = 0;
+}
 
 
 } // namespace custom
