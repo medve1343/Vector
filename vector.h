@@ -185,7 +185,7 @@ namespace custom
       iterator &operator++()
       {
          if (p != nullptr)
-         { p++; }
+            p++;
          return *this;
       }
 
