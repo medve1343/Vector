@@ -78,7 +78,7 @@ namespace custom
       class iterator;
 
       iterator begin() { return iterator(data); }
-      iterator end() { return iterator(data + numCapacity); }
+      iterator end()   { return iterator(data + numCapacity); }
 
       //
       // Access
@@ -98,8 +98,8 @@ namespace custom
       void push_back(const T &t);
       void push_back(T &&t);
       void reserve(size_t newCapacity);
-      void resize(size_t newElements);
-      void resize(size_t newElements, const T &t);
+      void resize (size_t newElements);
+      void resize (size_t newElements, const T &t);
 
       //
       // Remove
@@ -113,9 +113,9 @@ namespace custom
       // Status
       //
 
-      size_t size() const { return numElements; }
-      size_t capacity() const { return numCapacity; }
-      bool empty() const { return numElements == 0; }
+      size_t size() const     { return numElements;      }
+      size_t capacity() const { return numCapacity;      }
+      bool empty() const      { return numElements == 0; }
 
       // adjust the size of the buffer
 
